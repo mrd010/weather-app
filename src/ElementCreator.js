@@ -11,7 +11,7 @@ export function appendChildren(element, children) {
 // ############################################################################################################################################################
 export function createElement(elementTag, elementClass, ...attributes) {
   const element = document.createElement(elementTag);
-  if (elementClass) {
+  if (elementClass !== undefined) {
     element.classList.add(elementClass);
   }
 
@@ -23,6 +23,30 @@ export function createElement(elementTag, elementClass, ...attributes) {
 }
 
 // ############################################################################################################################################################
+export function createElementWithClasses(elementTag, elementClassNames, ...attributes) {
+  const element = document.createElement(elementTag);
+  if (elementClassNames !== undefined) {
+    element.setAttribute('class', elementClassNames);
+  }
+
+  attributes.forEach((attribute) => {
+    element.setAttribute(attribute[0], attribute[1]);
+  });
+
+  return element;
+}
+
+// ############################################################################################################################################################
+export const createContainer = function createContainer(classNames) {
+  const container = createElement('div', undefined);
+  if (classNames !== undefined) {
+    container.setAttribute('class', classNames);
+  }
+
+  return container;
+};
+
+// ############################################################################################################################################################
 
 export function createMaterialIcon(style, className, name) {
   const icon = createElement('span', className);
@@ -32,8 +56,11 @@ export function createMaterialIcon(style, className, name) {
 }
 // ############################################################################################################################################################
 
-export const createWeatherIcon = function createWeatherIcon(name) {
+export const createWeatherIcon = function createWeatherIcon(name, className = '') {
   const icon = createElement('i', 'wi');
   icon.classList.add(`wi-${name}`);
+  if (className !== '') {
+    icon.classList.add(className);
+  }
   return icon;
 };
