@@ -1,3 +1,6 @@
+import { format } from 'date-fns';
+import Weather from './Weather';
+
 import {
   createElement,
   createMaterialIcon,
@@ -61,7 +64,8 @@ const createHeaderSettings = function createHeaderSettings() {
     undefined,
     ['type', 'radio'],
     ['name', 'units'],
-    ['id', 'radio-metric']
+    ['id', 'radio-metric'],
+    ['value', 'metric']
   );
   const radioMetricLabel = createElementWithClasses('label', 'button-label no-wrap', [
     'for',
@@ -73,7 +77,8 @@ const createHeaderSettings = function createHeaderSettings() {
     undefined,
     ['type', 'radio'],
     ['name', 'units'],
-    ['id', 'radio-imperial']
+    ['id', 'radio-imperial'],
+    ['value', 'imperial']
   );
   const radioImperialLabel = createElementWithClasses('label', 'button-label no-wrap', [
     'for',
@@ -144,6 +149,7 @@ const createInfoDetail = function createWeatherInfoDetailSection(
     } else {
       const u = createElement('span', 'unit');
       u.innerHTML = unit.content;
+      infoDetail.appendChild(u);
     }
   }
 
@@ -157,7 +163,7 @@ const createLocationPart = function createLocationPart() {
   const sectionHeader = createContainer('section-header');
   const headerIcon = createContainer('header-icon');
   headerIcon.appendChild(createMaterialIcon(materialIconStyle, 'icon', 'location_city'));
-  const headerTitle = createElementWithClasses('h2', 'header-title no-wrap');
+  const headerTitle = createElementWithClasses('h2', 'header-title no-wrap name');
   const headerSub = createContainer('header-sub');
   appendChildren(headerSub, [
     createElementWithClasses('span', 'country no-wrap'),
@@ -237,7 +243,9 @@ const createTemperatureInfo = function createTemperatureInfoSection() {
 
   // create info detail - current temp
   tempInfo.appendChild(
-    createInfoDetail('current-temp', '', { icon: createWeatherIcon('celsius', 'unit-icon') })
+    createInfoDetail('current-temp', '', {
+      icon: createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon'),
+    })
   );
   // create info detail - feels like temp
   tempInfo.appendChild(
@@ -245,7 +253,7 @@ const createTemperatureInfo = function createTemperatureInfoSection() {
       'feels-like-temp',
       'Feels Like',
       {
-        icon: createWeatherIcon('celsius', 'unit-icon'),
+        icon: createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon'),
       },
       createMaterialIcon(materialIconStyle, 'icon', 'sentiment_satisfied')
     )
@@ -256,7 +264,7 @@ const createTemperatureInfo = function createTemperatureInfoSection() {
       'min-temp',
       'Min Temperature',
       {
-        icon: createWeatherIcon('celsius', 'unit-icon'),
+        icon: createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon'),
       },
       createWeatherIcon('thermometer-internal', 'icon')
     )
@@ -267,7 +275,7 @@ const createTemperatureInfo = function createTemperatureInfoSection() {
       'max-temp',
       'Max Temperature',
       {
-        icon: createWeatherIcon('celsius', 'unit-icon'),
+        icon: createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon'),
       },
       createWeatherIcon('thermometer-internal', 'icon')
     )
@@ -302,7 +310,7 @@ const createWindInfo = function createWindInfoSection() {
     createInfoDetail(
       'wind-speed',
       'Wind Speed',
-      { content: '<sup>m</sup>/<sub>s</sub>' },
+      { content: Weather.getUnits().speedUnit },
       createMaterialIcon(materialIconStyle, 'icon', 'speed')
     )
   );
@@ -375,19 +383,22 @@ const createForecastWeather = function createForecastWeatherContainer() {
   const headerTitle = createElement('h3', 'header-title');
   headerTitle.textContent = 'Future Days';
   containerHeader.appendChild(headerTitle);
+  forecastWeather.appendChild(containerHeader);
 
   // create cards container
+  const cardsContainer = createElement('div', 'container-main', ['id', 'forecast-cards-container']);
+  forecastWeather.appendChild(cardsContainer);
 
   return forecastWeather;
 };
 
 // Create Main #######################################
 export const createMain = function createMain() {
-  const header = createElement('header', 'header');
-  header.appendChild(createCurrentWeather());
-  header.appendChild(createForecastWeather());
+  const main = createElement('main');
+  main.appendChild(createCurrentWeather());
+  main.appendChild(createForecastWeather());
 
-  return header;
+  return main;
 };
 
 //  Create Footer #######################################
@@ -406,4 +417,54 @@ export const createFooter = function createFooter() {
   footer.appendChild(footerContent);
 
   return footer;
+};
+
+// create forecast cards
+export const createForecastCard = function createForecastCardFromData(forecastedData) {
+  const phaseOfDay = { d: 'day', n: 'night' };
+
+  const card = createContainer('side-card');
+
+  // date
+  const date = createElementWithClasses('span', 'date no-wrap');
+  date.textContent = format(forecastedData.dt * 1000, 'PPPP');
+  // time
+  const time = createElementWithClasses('span', 'time no-wrap');
+  time.textContent = format(forecastedData.dt * 1000, 'p');
+  // weather main
+  const weather = createContainer('weather');
+
+  weather.appendChild(
+    createWeatherIcon(
+      `owm-${phaseOfDay[forecastedData.sys.pod]}-${forecastedData.weather[0].id}`,
+      'icon'
+    )
+  );
+  const weatherType = createElementWithClasses('span', 'weather-type no-wrap');
+  weatherType.textContent = forecastedData.weather[0].main;
+  weather.appendChild(weatherType);
+  // temperature
+  const temp = createContainer('temp');
+  const avgTemp = createContainer('avg-temp');
+  let span = createElement('span', 'value');
+  span.textContent = Math.round(forecastedData.main.temp);
+  span.setAttribute('data-real-value', `${forecastedData.main.temp}`);
+  appendChildren(avgTemp, [span, createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon')]);
+
+  const minTemp = createContainer('min-temp');
+  span = createElement('span', 'value');
+  span.textContent = Math.round(forecastedData.main.temp_min);
+  span.setAttribute('data-real-value', `${forecastedData.main.temp_min}`);
+  appendChildren(minTemp, [span, createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon')]);
+
+  const maxTemp = createContainer('max-temp');
+  span = createElement('span', 'value');
+  span.textContent = Math.round(forecastedData.main.temp_max);
+  span.setAttribute('data-real-value', `${forecastedData.main.temp_max}`);
+  appendChildren(maxTemp, [span, createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon')]);
+  appendChildren(temp, [avgTemp, minTemp, maxTemp]);
+
+  appendChildren(card, [date, time, weather, temp]);
+
+  return card;
 };

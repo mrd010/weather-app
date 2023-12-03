@@ -140,6 +140,43 @@ body {
 }
 
 // header styles #################################################
+.header-search {
+  .loading {
+    position: absolute;
+    bottom: -50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    .custom-loader {
+      width: 100px;
+      height: 100px;
+      --c: radial-gradient(farthest-side, #f4f4f4 92%, #0000);
+      background:
+        var(--c) 50% 0,
+        var(--c) 50% 100%,
+        var(--c) 100% 50%,
+        var(--c) 0 50%;
+      background-size: 20px 20px;
+      background-repeat: no-repeat;
+      animation: s8 1s infinite;
+      position: relative;
+    }
+    .custom-loader::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      margin: 6px;
+      background: repeating-conic-gradient(#0000 0 35deg, #f4f4f4 0 90deg);
+      -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 6px), #000 0);
+      border-radius: 50%;
+    }
+
+    @keyframes s8 {
+      100% {
+        transform: rotate(0.5turn);
+      }
+    }
+  }
+}
 .header {
   max-width: 100%;
   padding: 0 1rem;
@@ -156,6 +193,13 @@ body {
   }
 
   .header-search {
+    &.centered {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: scale(1.5, 1.5) translate(-50%, -50%);
+      z-index: 100;
+    }
     min-width: 240px;
     max-width: 500px;
     form {
@@ -600,16 +644,28 @@ main {
   }
 }
 
+.error-container {
+  position: absolute;
+  bottom: 100px;
+  right: 100px;
+  background-color: red;
+  border-radius: $sectionBdrRadius;
+  padding: $basePadding * 2;
+  color: #fff;
+  border: 2px solid #fff;
+}
+
 main {
   margin-bottom: auto;
   overflow-y: hidden;
+  position: relative;
+
   .loading {
     width: 100%;
     height: 100%;
     position: absolute;
     background-color: var(--op-color);
-    border-radius: $sectionBdrRadius;
-    z-index: 1;
+    z-index: 100;
     display: grid;
     place-items: center;
     .custom-loader {
