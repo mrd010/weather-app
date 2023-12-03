@@ -55,7 +55,7 @@ const showWeatherInfo = function showWeatherInfoOnMainContainer(
     currentWeatherData.sys.sunrise * 1000,
     currentWeatherData.sys.sunset * 1000
   );
-  document.querySelector('.wrapper').style.background = `url(${BG[timeOfDay]})`;
+  document.querySelector('.wrapper').style.backgroundImage = `url(${BG[timeOfDay]})`;
   generalInfoSection
     .querySelector('#weather-info .info-icon i')
     .replaceWith(createWeatherIcon(`owm-${timeOfDay}-${currentWeatherData.weather[0].id}`, 'icon'));
@@ -111,6 +111,21 @@ const showWeatherInfo = function showWeatherInfoOnMainContainer(
   );
 };
 
+// disable input while loading #######################################################
+const disableInputs = function disableSearchAndRadioButtons() {
+  document.getElementById('search-city').setAttribute('disabled', true);
+  document.getElementById('radio-metric').setAttribute('disabled', true);
+  document.getElementById('radio-imperial').setAttribute('disabled', true);
+  document.getElementById('refresh-info').setAttribute('disabled', true);
+};
+// enable input while loading finishes #######################################################
+const enableInputs = function enableSearchAndRadioButtons() {
+  document.getElementById('search-city').removeAttribute('disabled');
+  document.getElementById('radio-metric').removeAttribute('disabled');
+  document.getElementById('radio-imperial').removeAttribute('disabled');
+  document.getElementById('refresh-info').removeAttribute('disabled');
+};
+
 // show loading overlay when there is no other loading shown ###############################################
 const showLoading = function showLoadings() {
   if (!isLoading) {
@@ -125,6 +140,7 @@ const showLoading = function showLoadings() {
     else {
       document.querySelector('main').appendChild(loadingContainer);
     }
+    disableInputs();
     return loadingContainer;
   }
   return null;
@@ -162,6 +178,7 @@ const getWeatherInfo = async function getWeatherInfo() {
   if (loadingSession) {
     loadingSession.remove();
     isLoading = false;
+    enableInputs();
   }
 
   // check if data received is correct and if not show error for each code returned
@@ -276,6 +293,7 @@ const initLoad = function initialLoadingOfAppLayout() {
   // set time
   const headerTime = header.querySelector('#current-local-time .header-time-time');
   const headerTimeZone = header.querySelector('#current-local-time .header-time-zone');
+  // auto update time in header
   setInterval(() => {
     const currentTime = Date.now();
     headerTime.textContent = format(currentTime, 'PPP , p');
@@ -309,6 +327,7 @@ const initLoad = function initialLoadingOfAppLayout() {
     }
   });
 
+  // auto update last updated time
   setInterval(() => {
     main.querySelector('#last-updated-info .formatted-time').textContent = formatDistanceToNow(
       Weather.getLastTimeUpdated(),
