@@ -1,11 +1,5 @@
 import { format, isAfter, isBefore, formatDistanceToNow } from 'date-fns';
-import {
-  createElement,
-  createMaterialIcon,
-  createWeatherIcon,
-  createElementWithClasses,
-  createContainer,
-} from './ElementCreator';
+import { createElement, createWeatherIcon, createContainer } from './ElementCreator';
 import { createHeader, createMain, createFooter, createForecastCard } from './WeatherAppTemplate';
 
 import Weather from './Weather';
@@ -16,7 +10,7 @@ let isLoading;
 let firstLoad;
 
 // time of day (day,night) ###############################################
-const getTimeOfDay = function timeOfDayDayOrNight(currentTime, sunrise, sunset) {
+const getPhaseOfDay = function timeOfDayDayOrNight(currentTime, sunrise, sunset) {
   if (isAfter(currentTime, sunrise) && isBefore(currentTime, sunset)) {
     return 'day';
   }
@@ -51,7 +45,7 @@ const showWeatherInfo = function showWeatherInfoOnMainContainer(
   generalInfoSection.querySelector('#longitude-info .value').textContent =
     locationData.lon.toFixed(2);
   // general weather info
-  const timeOfDay = getTimeOfDay(
+  const timeOfDay = getPhaseOfDay(
     currentWeatherData.dt * 1000,
     currentWeatherData.sys.sunrise * 1000,
     currentWeatherData.sys.sunset * 1000
