@@ -4,6 +4,8 @@ import { createHeader, createMain, createFooter, createForecastCard } from './We
 
 import Weather from './Weather';
 import countryListAlpha2 from './variousCountryListFormats';
+import dayBackground from './img/day.jpg';
+import nightBackground from './img/night.jpg';
 
 // const and vars ###############################################
 let isLoading;
@@ -23,6 +25,8 @@ const showWeatherInfo = function showWeatherInfoOnMainContainer(
   currentWeatherData,
   forecastWeatherData
 ) {
+  // define constants
+  const BG = { day: dayBackground, night: nightBackground };
   // define containers
   const generalInfoSection = document.getElementById('general-info');
   const lastUpdatedInfoSection = document.getElementById('last-updated-info');
@@ -31,6 +35,7 @@ const showWeatherInfo = function showWeatherInfoOnMainContainer(
   const otherInfoSection = document.getElementById('other-info');
   const forecastCardsSection = document.getElementById('forecast-cards-container');
   // set current weather infos
+
   // location info
   generalInfoSection.querySelector('#location-info .name').textContent = locationData.name;
   const countryName = countryListAlpha2[locationData.country].split('(')[0];
@@ -50,6 +55,7 @@ const showWeatherInfo = function showWeatherInfoOnMainContainer(
     currentWeatherData.sys.sunrise * 1000,
     currentWeatherData.sys.sunset * 1000
   );
+  document.querySelector('.wrapper').style.background = `url(${BG[timeOfDay]})`;
   generalInfoSection
     .querySelector('#weather-info .info-icon i')
     .replaceWith(createWeatherIcon(`owm-${timeOfDay}-${currentWeatherData.weather[0].id}`, 'icon'));
