@@ -1,11 +1,14 @@
 import { format, isAfter, isBefore, formatDistanceToNow } from 'date-fns';
-import { createElement, createWeatherIcon, createContainer } from './ElementCreator';
+import {
+  createElement,
+  createWeatherIcon,
+  createContainer,
+  createElementWithClasses,
+} from './ElementCreator';
 import { createHeader, createMain, createFooter, createForecastCard } from './WeatherAppTemplate';
 
 import Weather from './Weather';
 import countryListAlpha2 from './variousCountryListFormats';
-import dayBackground from './img/day.jpg';
-import nightBackground from './img/night.jpg';
 
 // const and vars ###############################################
 let isLoading;
@@ -25,8 +28,6 @@ const showWeatherInfo = function showWeatherInfoOnMainContainer(
   currentWeatherData,
   forecastWeatherData
 ) {
-  // define constants
-  const BG = { day: dayBackground, night: nightBackground };
   // define containers
   const generalInfoSection = document.getElementById('general-info');
   const lastUpdatedInfoSection = document.getElementById('last-updated-info');
@@ -55,7 +56,10 @@ const showWeatherInfo = function showWeatherInfoOnMainContainer(
     currentWeatherData.sys.sunrise * 1000,
     currentWeatherData.sys.sunset * 1000
   );
-  document.querySelector('.wrapper').style.backgroundImage = `url(${BG[timeOfDay]})`;
+
+  document.getElementById('bg-day').style.opacity = timeOfDay === 'day' ? '1' : '0';
+  document.getElementById('bg-night').style.opacity = timeOfDay === 'night' ? '1' : '0';
+
   generalInfoSection
     .querySelector('#weather-info .info-icon i')
     .replaceWith(createWeatherIcon(`owm-${timeOfDay}-${currentWeatherData.weather[0].id}`, 'icon'));
@@ -131,15 +135,12 @@ const showLoading = function showLoadings() {
   if (!isLoading) {
     isLoading = true;
     const loadingContainer = createContainer('loading');
+    const loadingText = createElement('span', 'loading-text');
+    loadingText.textContent = 'Get Data';
+    loadingContainer.appendChild(loadingText);
     loadingContainer.appendChild(createContainer('custom-loader'));
-    // show loading when there is no initial info to shown
-    if (firstLoad) {
-      document.querySelector('.header-search').appendChild(loadingContainer);
-    }
-    // show loading on current info
-    else {
-      document.querySelector('main').appendChild(loadingContainer);
-    }
+    // show loading
+    document.querySelector('.header').appendChild(loadingContainer);
     disableInputs();
     return loadingContainer;
   }
@@ -212,11 +213,14 @@ const getWeatherInfo = async function getWeatherInfo() {
     return false;
   }
 
-  // if its first time loading a weather move search box to top
+  // if its first time loading a weather move header box to top
   if (firstLoad) {
     firstLoad = false;
-    document.querySelector('main').style.opacity = '1';
-    document.querySelector('.header .header-search').classList.remove('centered');
+
+    document.querySelector('.wrapper').classList.remove('first-load');
+    setTimeout(() => {
+      document.querySelector('main').style.opacity = '1';
+    }, 1);
   }
   document.getElementById('search-city').value = '';
 
@@ -281,7 +285,13 @@ const changeUnitsDisplay = function changeUnitsDisplay() {
 const initLoad = function initialLoadingOfAppLayout() {
   isLoading = false;
   firstLoad = true;
-  const wrapper = createContainer('wrapper');
+  // add bg image containers
+  document.body.appendChild(createElement('div', 'bg-container', ['id', 'bg-day']));
+  document.body.appendChild(createElement('div', 'bg-container', ['id', 'bg-night']));
+
+  const wrapper = createElementWithClasses('div', 'wrapper first-load');
+  // set background
+
   // create header
   const header = createHeader();
   wrapper.appendChild(header);
@@ -310,8 +320,6 @@ const initLoad = function initialLoadingOfAppLayout() {
 
   // set search input
   const search = header.querySelector('.header-search');
-  search.classList.add('centered');
-
   search.querySelector('form').addEventListener('submit', (e) => {
     e.preventDefault();
     if (!isLoading) {

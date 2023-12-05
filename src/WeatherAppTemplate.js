@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, isToday, isTomorrow } from 'date-fns';
 import Weather from './Weather';
 
 import {
@@ -57,7 +57,7 @@ const createHeaderSettings = function createHeaderSettings() {
     'id',
     'units-toggle',
   ]);
-  const headerSettingsLabel = createElement('h5', 'header-settings-label');
+  const headerSettingsLabel = createElement('span', 'header-settings-label');
   headerSettingsLabel.textContent = 'Units:';
   const radioMetric = createElement(
     'input',
@@ -71,7 +71,7 @@ const createHeaderSettings = function createHeaderSettings() {
     'for',
     'radio-metric',
   ]);
-  radioMetricLabel.textContent = 'Metric';
+  radioMetricLabel.textContent = 'Metric Units';
   const radioImperial = createElement(
     'input',
     undefined,
@@ -84,7 +84,7 @@ const createHeaderSettings = function createHeaderSettings() {
     'for',
     'radio-imperial',
   ]);
-  radioImperialLabel.textContent = 'Imperial';
+  radioImperialLabel.textContent = 'Imperial Units';
 
   appendChildren(headerSettingsToggle, [
     headerSettingsLabel,
@@ -222,7 +222,7 @@ const createLastUpdated = function createLastUpdatedSection() {
   lastUpdated.appendChild(sectionHeader);
   // create action button
   const actionButton = createElement('button', 'action-button', ['id', 'refresh-info']);
-  actionButton.appendChild(createMaterialIcon(materialIconStyle, 'icon', 'update'));
+  actionButton.appendChild(createMaterialIcon(materialIconStyle, 'icon', 'autorenew'));
   lastUpdated.appendChild(actionButton);
 
   return lastUpdated;
@@ -427,7 +427,14 @@ export const createForecastCard = function createForecastCardFromData(forecasted
 
   // date
   const date = createElementWithClasses('span', 'date no-wrap');
-  date.textContent = format(forecastedData.dt * 1000, 'PPPP');
+  if (isToday(forecastedData.dt * 1000)) {
+    date.textContent = 'Today';
+  } else if (isTomorrow(forecastedData.dt * 1000)) {
+    date.textContent = 'Tomorrow';
+  } else {
+    date.textContent = format(forecastedData.dt * 1000, 'PPPP');
+  }
+
   // time
   const time = createElementWithClasses('span', 'time no-wrap');
   time.textContent = format(forecastedData.dt * 1000, 'p');
@@ -452,16 +459,20 @@ export const createForecastCard = function createForecastCardFromData(forecasted
   appendChildren(avgTemp, [span, createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon')]);
 
   const minTemp = createContainer('min-temp');
+  let key = createElement('span', 'key');
+  key.textContent = 'Min';
   span = createElement('span', 'value');
   span.textContent = Math.round(forecastedData.main.temp_min);
   span.setAttribute('data-real-value', `${forecastedData.main.temp_min}`);
-  appendChildren(minTemp, [span, createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon')]);
+  appendChildren(minTemp, [key, span, createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon')]);
 
   const maxTemp = createContainer('max-temp');
+  key = createElement('span', 'key');
+  key.textContent = 'Max';
   span = createElement('span', 'value');
   span.textContent = Math.round(forecastedData.main.temp_max);
   span.setAttribute('data-real-value', `${forecastedData.main.temp_max}`);
-  appendChildren(maxTemp, [span, createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon')]);
+  appendChildren(maxTemp, [key, span, createWeatherIcon(Weather.getUnits().tempUnit, 'unit-icon')]);
   appendChildren(temp, [avgTemp, minTemp, maxTemp]);
 
   appendChildren(card, [date, time, weather, temp]);
